@@ -35,8 +35,10 @@ FlakeHunter used to serve `g26work.com`, `www` and `flakehunter`. Afterwards thi
 and FlakeHunter serves `flakehunter.g26work.com` from its own association. `flakehunter.g26work.com` is down from step 1
 until step 3 finishes (usually under an hour); FlakeHunter's `amplifyapp.com` URL keeps working throughout.
 
-1. **FlakeHunter: release the domain.** In the FlakeHunter repository, remove `customDomain` from `infra/cdk.json` and
-   deploy `FlakeHunterWeb` (its runbook, step 8). CloudFormation deletes the `g26work.com` association.
+1. **FlakeHunter: release the domain.** In the FlakeHunter repository, with `customDomain` removed from
+   `infra/cdk.json`, deploy `FlakeHunterWeb` (its runbook, step 8). The imported association has a `Retain` policy, so
+   the deploy only detaches it; then delete it with `aws amplify delete-domain-association` as FlakeHunter's runbook
+   ("Custom domain", step 1) shows, and check that the app lists no domain associations.
 2. **This site: deploy.**
 
    ```bash
