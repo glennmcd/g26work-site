@@ -71,10 +71,11 @@ describe("SiteStack Amplify app", () => {
     expect(scripts["check:dist"]).toBeDefined();
   });
 
-  it("redirects the bare domain to www first, then sends unknown paths to the 404 page with a 404 status", () => {
+  it("redirects the bare domain to www first, then serves the 404 page in place for unknown paths", () => {
+    // "404-200" rewrites to the page at the requested URL; "404" redirected (302) to /404.html instead.
     expect(app().Properties.CustomRules).toEqual([
       { Source: "https://example.com", Target: "https://www.example.com", Status: "301" },
-      { Source: "/<*>", Target: "/404.html", Status: "404" },
+      { Source: "/<*>", Target: "/404.html", Status: "404-200" },
     ]);
   });
 
