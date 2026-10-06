@@ -14,6 +14,7 @@ aws login --region us-east-2 --profile g26work
 - The domain association for `g26work.com`: the bare domain and `www`. Amplify issues the certificate and writes the
   DNS records itself, because the `g26work.com` hosted zone is in the same project. The bare domain redirects to `www`
   with a 301.
+- Unknown paths show the site's 404 page in place, at the address the visitor asked for (rule `404-200`).
 - Response headers on every path: a Content-Security-Policy with no scripts and no inline styles, HSTS, `nosniff`, a
   referrer policy and a permissions policy.
 
@@ -21,54 +22,59 @@ The settings are in [`infra/cdk.json`](../infra/cdk.json) under `site*` keys. Th
 or `githubTokenSecretName`: those generic keys would also read your `~/.cdk.json`, which FlakeHunter uses for its own
 repository.
 
-## Before the first deploy
+## How the domain is shared with FlakeHunter
+
+Two Amplify apps in the same project split `g26work.com`, each with its own domain association:
+
+| Host | App | Association |
+| --- | --- | --- |
+| `g26work.com`, `www.g26work.com` | this site (`g26work-site`) | `g26work.com`, prefixes `""` and `www` |
+| `flakehunter.g26work.com` | the FlakeHunter dashboard (`flakehunter-web`) | `flakehunter.g26work.com`, prefix `""` |
+
+An Amplify domain name belongs to one app, but a subdomain can be its own association on another app (this setup has
+run that way since 2026-10-06). Keep each host on one association only: `flakehunter` never goes in this site's
+`subDomains`.
+
+Until 2026-10-06 the FlakeHunter dashboard held all of `g26work.com`. Moving it took a FlakeHunter deploy that released
+the domain, this stack's first deploy, then a FlakeHunter deploy for its subdomain; FlakeHunter's `docs/deployment.md`
+("Custom domain") records the steps.
+
+## Deploy
 
 1. **The GitHub token can read this repository.** The stack reuses the Secrets Manager secret
-   `flakehunter/github-token`. If that is a fine-grained token, add `glennmcd/g26work-site` to its repository access on
-   GitHub (Settings, Developer settings, the token, Repository access). Otherwise the first build fails to clone.
-2. **The domain is free.** An Amplify domain name belongs to one app. While FlakeHunter's association still covers
-   `g26work.com`, creating this one fails. Move FlakeHunter to its own subdomain first (below).
-
-## Cutover from FlakeHunter (one-off)
-
-FlakeHunter used to serve `g26work.com`, `www` and `flakehunter`. Afterwards this site serves `g26work.com` and `www`,
-and FlakeHunter serves `flakehunter.g26work.com` from its own association. `flakehunter.g26work.com` is down from step 1
-until step 3 finishes (usually under an hour); FlakeHunter's `amplifyapp.com` URL keeps working throughout.
-
-1. **FlakeHunter: release the domain.** In the FlakeHunter repository, with `customDomain` removed from
-   `infra/cdk.json`, deploy `FlakeHunterWeb` (its runbook, step 8). The imported association has a `Retain` policy, so
-   the deploy only detaches it; then delete it with `aws amplify delete-domain-association` as FlakeHunter's runbook
-   ("Custom domain", step 1) shows, and check that the app lists no domain associations.
-2. **This site: deploy.**
+   `flakehunter/github-token`. If that is a fine-grained token, `glennmcd/g26work-site` must be in its repository
+   access on GitHub (Settings, Developer settings, the token, Repository access), or builds fail to clone.
+2. **Deploy.**
 
    ```bash
    bun run --cwd infra cdk diff --profile g26work
    bun run --cwd infra cdk deploy --profile g26work
    ```
 
-   The first build starts by itself. Watch the domain until it reads `AVAILABLE` (15 to 30 minutes):
+3. **On a new app, start the first build.** Amplify builds on pushes it hears through its GitHub webhook, which the
+   stack creates. Creating the app does not build the code already on `main`, so until the first build the domain
+   shows Amplify's "Welcome" placeholder. Start it once:
+
+   ```bash
+   aws amplify start-job --profile g26work --region us-east-2 --app-id <AmplifyAppId output> --branch-name main --job-type RELEASE
+   ```
+
+4. **On a new domain, wait for it.** The association reaches `AVAILABLE` in 15 to 30 minutes, once Amplify has written
+   the DNS records and issued the certificate:
 
    ```bash
    aws amplify get-domain-association --profile g26work --region us-east-2 --app-id <AmplifyAppId output> --domain-name g26work.com --query domainAssociation.domainStatus --output text
    ```
 
-3. **FlakeHunter: take its subdomain.** Set FlakeHunter's `customDomain` to
-   `{ "domainName": "flakehunter.g26work.com", "subDomains": [""] }` and deploy `FlakeHunterWeb` again.
-
-   The AWS documentation does not say outright that one app may hold `g26work.com` while another holds
-   `flakehunter.g26work.com`. If Amplify refuses, this site keeps working; serve `flakehunter` from this site's
-   association instead, as a redirect to FlakeHunter's `amplifyapp.com` URL.
-
-Do steps 1 and 3 as two separate FlakeHunter deploys. Changing the domain name in one deploy makes CloudFormation create
-the new association while the old one still claims `flakehunter`, and the deploy fails.
-
 ## Check it
 
 ```bash
-curl -sI https://g26work.com | grep -i -E "^(HTTP|location)"          # 301 to https://www.g26work.com
-curl -sI https://www.g26work.com | grep -i content-security-policy    # the policy from infra/lib/site-stack.ts
-curl -s -o /dev/null -w "%{http_code}\n" https://www.g26work.com/nope # 404
+curl -sI https://g26work.com | grep -i -E "^(HTTP|location)"           # 301 to https://www.g26work.com/
+curl -sI https://www.g26work.com | grep -i content-security-policy     # the policy from infra/lib/site-stack.ts
+curl -sI https://www.g26work.com/nope/ | grep -i -E "^(HTTP|location)" # no location header: the 404 page in place
 ```
+
+Amplify adds a trailing slash first, so `/nope` answers `301` to `/nope/`; that is expected.
 
 ## Day to day
 

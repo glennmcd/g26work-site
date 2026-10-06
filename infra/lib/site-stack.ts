@@ -106,8 +106,10 @@ export class SiteStack extends Stack {
       customRules: [
         // One canonical address: the bare domain redirects permanently to www.
         { source: `https://${props.domainName}`, target: `https://${www}`, status: "301" },
-        // Unknown paths get the site's own 404 page with a real 404 status.
-        { source: "/<*>", target: "/404.html", status: "404" },
+        // Unknown paths get the site's own 404 page, served in place at the requested URL. This is Amplify's own
+        // default 404 rule type; the plain "404" type answered with a 302 redirect to /404.html, a page that returns
+        // 200, so the visitor's address changed and crawlers saw a page that exists.
+        { source: "/<*>", target: "/404.html", status: "404-200" },
       ],
     });
 
