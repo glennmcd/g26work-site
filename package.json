@@ -1,0 +1,23 @@
+{
+  "name": "g26work-site",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "site",
+    "infra"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd site dev",
+    "build:site": "bun run --cwd site build",
+    "check:dist": "bun run --cwd site check:dist",
+    "lint": "biome ci .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "bun run --cwd site check && tsc --noEmit -p infra/tsconfig.json",
+    "test": "bun --cwd site test && bun --cwd infra test",
+    "synth:infra": "cd infra && node node_modules/aws-cdk/bin/cdk synth --quiet"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "typescript": "^5.7.2"
+  }
+}

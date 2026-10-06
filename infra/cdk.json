@@ -1,0 +1,14 @@
+{
+  "app": "node --import tsx bin/site.ts",
+  "watch": {
+    "include": ["**"],
+    "exclude": ["README.md", "cdk*.json", "node_modules", "test", "cdk.out"]
+  },
+  "context": {
+    "siteRepository": "https://github.com/glennmcd/g26work-site",
+    "siteGithubTokenSecretName": "flakehunter/github-token",
+    "siteDomainName": "g26work.com",
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/aws-iam:minimizePolicies": true
+  }
+}

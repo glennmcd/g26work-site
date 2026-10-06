@@ -1,0 +1,101 @@
+---
+import { assertValidProjects, intro, owner, projects, STAGE_LABELS, summarize } from "../data/projects";
+import Base from "../layouts/Base.astro";
+
+assertValidProjects(projects);
+const status = summarize(projects);
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+---
+
+<Base title="g26work · Projects by glennmcd" description={`${intro}: ${projects.map((p) => p.name).join(", ")}.`} path="/">
+  <header class="board-head">
+    <div class="title">
+      <h1 class="wordmark">g26work</h1>
+      <p class="byline">by <span class="handle">{owner.handle}</span></p>
+    </div>
+    <nav class="owner" aria-label={`${owner.handle} elsewhere`}>
+      <a href={owner.github}>GitHub</a>
+      <a href={owner.linkedin}>LinkedIn</a>
+    </nav>
+  </header>
+
+  <main class="board" aria-labelledby="board-title">
+    <div class="board-bar">
+      <h2 id="board-title">{intro}</h2>
+      <p class="status">
+        <span>{plural(status.projects, "project", "projects")}</span>
+        <span>
+          <span class="lamp" data-access="public" aria-hidden="true"></span>
+          {plural(status.public, "public link", "public links")}
+        </span>
+        <span>
+          <span class="lamp" data-access="restricted" aria-hidden="true"></span>
+          {plural(status.restricted, "restricted link", "restricted links")}
+        </span>
+      </p>
+    </div>
+
+    <ol class="rows">
+      {
+        projects.map((project) => (
+          <li class="row" id={project.id}>
+            <div class="row-head">
+              <h3 class="project-name">{project.name}</h3>
+              <p class="summary">{project.summary}</p>
+            </div>
+
+            <ol class="pipeline" aria-label={`${project.name}: where to find it`}>
+              {project.stages.map((stage, index) => (
+                <li class="stage" data-access={stage.access} data-primary={index === 0 ? "" : undefined}>
+                  <a class="stage-link" href={stage.href}>
+                    <span class="lamp" aria-hidden="true" />
+                    <span class="stage-label">{STAGE_LABELS[stage.kind]}</span>
+                    {stage.literal ? (
+                      <span class="stage-detail" data-literal>
+                        {stage.detail.split(/(?<=[/.])/).map((part, i) => (
+                          <>
+                            {i > 0 && <wbr />}
+                            {part}
+                          </>
+                        ))}
+                      </span>
+                    ) : (
+                      <span class="stage-detail">{stage.detail}</span>
+                    )}
+                    {stage.access === "restricted" && <span class="tag">Restricted</span>}
+                  </a>
+                  {stage.badge && <img class="badge" src={stage.badge.src} alt={stage.badge.alt} height="20" />}
+                  {stage.note && (
+                    <p class="stage-note">
+                      {stage.note.text} <a href={stage.note.href}>{stage.note.linkText}</a>
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ol>
+
+            <dl class="facts">
+              <div>
+                <dt>Started</dt>
+                <dd>{project.year}</dd>
+              </div>
+              <div>
+                <dt>Stack</dt>
+                <dd>{project.stack.join(" · ")}</dd>
+              </div>
+              <div>
+                <dt>License</dt>
+                <dd>{project.license}</dd>
+              </div>
+            </dl>
+          </li>
+        ))
+      }
+    </ol>
+
+    <ul class="legend" aria-label="What the lamps mean">
+      <li><span class="lamp" data-access="public" aria-hidden="true"></span>Public: open to anyone</li>
+      <li><span class="lamp" data-access="restricted" aria-hidden="true"></span>Restricted: needs a password</li>
+    </ul>
+  </main>
+</Base>

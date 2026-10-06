@@ -1,0 +1,515 @@
+/* g26work: a build-status board for a body of work. Daylight board by default, dark under the visitor's setting.
+   Elevation is a 1px border, never a shadow. Green means public, amber means restricted; nothing else is coloured. */
+
+:root {
+  --ground: #eef2f0;
+  --panel: #f9fbfa;
+  --ink: #14201b;
+  --ink-2: #44534c;
+  --rule: #cdd6d1;
+  --pipe: #a3b0a9;
+  --ok: #1d6f47;
+  --ok-lamp: #2fa36b;
+  --warn: #7f5300;
+  --warn-lamp: #d9a400;
+  --select: #bfe5cf;
+
+  --display: "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --text: "Barlow", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --radius: 6px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #0e1412;
+    --panel: #141c19;
+    --ink: #e4ebe7;
+    --ink-2: #a6b4ad;
+    --rule: #2a3631;
+    --pipe: #43524b;
+    --ok: #6ad3a0;
+    --ok-lamp: #2fa36b;
+    --warn: #f0c35a;
+    --warn-lamp: #d9a400;
+    --select: #1f5a3d;
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 100%;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--pipe) var(--ground);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--gutter);
+}
+
+::selection {
+  background: var(--select);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+h1,
+h2,
+h3,
+p,
+ol,
+ul,
+dl,
+dd {
+  margin: 0;
+}
+
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+/* Board header: the wordmark and who it belongs to. */
+
+.board-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 2rem;
+  max-width: 72rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) 0 1.25rem;
+}
+
+.wordmark {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2.75rem, 7vw, 4.75rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+}
+
+.wordmark a {
+  text-decoration: none;
+}
+
+.owner {
+  display: flex;
+  align-items: baseline;
+  gap: 1.25rem;
+  font-weight: 500;
+}
+
+.title {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.byline {
+  font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+  color: var(--ink-2);
+}
+
+.byline .handle {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* The board: one bordered panel. */
+
+.board {
+  max-width: 72rem;
+  width: 100%;
+  margin: 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.board-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 2rem;
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+  border-bottom: 1px solid var(--rule);
+}
+
+.board-bar h1,
+.board-bar h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  color: var(--ink-2);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.status > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Status lamps: a filled disc for public, a half-lit ring for restricted, so the meaning never rests on colour. */
+
+.lamp {
+  flex: none;
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+}
+
+.lamp[data-access="public"],
+[data-access="public"] > .stage-link .lamp {
+  background: var(--ok-lamp);
+}
+
+.lamp[data-access="restricted"],
+[data-access="restricted"] > .stage-link .lamp {
+  background: linear-gradient(90deg, var(--warn-lamp) 50%, transparent 50%);
+  box-shadow: inset 0 0 0 2px var(--warn-lamp);
+}
+
+/* A project row. */
+
+.row {
+  display: grid;
+  gap: 1.75rem;
+  padding: clamp(1.75rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+}
+
+.row + .row {
+  border-top: 1px solid var(--rule);
+}
+
+.row-head {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.project-name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.summary {
+  max-width: 62ch;
+  font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+  color: var(--ink-2);
+}
+
+/* The pipeline: stages joined by a rule that runs through their lamps. */
+
+.pipeline {
+  /* The lamp's centre inside a stage link: border, top padding, half the label's line box. */
+  --lamp-x: calc(1px + 0.875rem + 0.4375rem);
+  --lamp-y: calc(1px + 0.75rem + 0.84375rem);
+  --stage-gap: 2rem;
+  /* Where the label text starts: lamp, its width, the gap. The badge and note line up here, clear of the rule. */
+  --label-x: calc(1px + 0.875rem + 0.875rem + 0.625rem);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: auto auto;
+  column-gap: var(--stage-gap);
+}
+
+/* Each stage spans the pipeline's two rows (link, then badge or note), so every link has the same height. */
+.stage {
+  position: relative;
+  grid-row: span 2;
+  display: grid;
+  grid-template-rows: subgrid;
+  row-gap: 0.625rem;
+}
+
+/* The segment leaving each stage, from its lamp to the next stage. The links sit above it, so it shows in the gaps. */
+.stage:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: var(--lamp-y);
+  left: var(--lamp-x);
+  right: calc(-1 * var(--stage-gap));
+  height: 2px;
+  margin-top: -1px;
+  background: var(--pipe);
+  transition: background-color 200ms var(--ease-out);
+}
+
+.stage:hover::after,
+.stage:focus-within::after,
+.stage:has(+ .stage:hover)::after,
+.stage:has(+ .stage:focus-within)::after {
+  background: var(--ink);
+}
+
+.stage-link {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  align-content: start;
+  gap: 0.25rem 0.625rem;
+  padding: 0.75rem 0.875rem 0.875rem;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: border-color 200ms var(--ease-out);
+}
+
+.stage-link:hover {
+  border-color: var(--ink);
+}
+
+.stage-label {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: 0.01em;
+}
+
+.stage-detail {
+  grid-column: 1 / -1;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--ink-2);
+  overflow-wrap: break-word;
+}
+
+/* Paths and hosts are data, so they are set as data. */
+.stage-detail[data-literal] {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+}
+
+.stage-link:hover .stage-label,
+.stage-link:focus-visible .stage-label {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+/* The source stage is the row's primary action: the heaviest frame on the board. */
+.stage[data-primary] .stage-link {
+  border: 2px solid var(--ok);
+  padding: calc(0.75rem - 1px) calc(0.875rem - 1px) calc(0.875rem - 1px);
+}
+
+.stage[data-primary] .stage-label {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.tag {
+  grid-column: 1 / -1;
+  justify-self: start;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--warn);
+}
+
+.badge {
+  display: block;
+  height: 20px;
+  width: auto;
+  margin-left: var(--label-x);
+}
+
+.stage-note {
+  padding-left: var(--label-x);
+  font-size: 0.875rem;
+  color: var(--warn);
+}
+
+.stage-note a {
+  display: inline;
+}
+
+/* Facts: a ruled tally with tabular figures. */
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.facts > div {
+  display: grid;
+  gap: 0.125rem;
+  padding-right: 1.5rem;
+  margin-right: 1.5rem;
+  border-right: 1px solid var(--rule);
+}
+
+.facts > div:last-child {
+  border-right: 0;
+}
+
+.facts dt {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.facts dd {
+  font-weight: 500;
+}
+
+/* Legend closes the board. */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.75rem;
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 0.875rem;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.missing {
+  padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 3vw, 2rem);
+  font-size: 1.125rem;
+}
+
+.site-foot {
+  max-width: 72rem;
+  width: 100%;
+  margin: auto auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  padding: 2.5rem 0 2rem;
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+
+.site-foot .host {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+}
+
+/* Signature moment: on load the lamps light once in stage order. Every lamp is visible from the first frame. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage .lamp {
+    animation: lamp-on 700ms var(--ease-out) both;
+  }
+
+  .stage:nth-child(2) .lamp {
+    animation-delay: 140ms;
+  }
+
+  .stage:nth-child(3) .lamp {
+    animation-delay: 280ms;
+  }
+
+  .stage:nth-child(4) .lamp {
+    animation-delay: 420ms;
+  }
+
+  @keyframes lamp-on {
+    from {
+      opacity: 0.35;
+      transform: scale(0.7);
+    }
+  }
+}
+
+/* Narrow screens: the pipeline turns vertical, the rule running down through the lamps. */
+
+@media (max-width: 52rem) {
+  .pipeline {
+    --stage-gap: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    row-gap: var(--stage-gap);
+  }
+
+  .stage {
+    grid-row: auto;
+    grid-template-rows: none;
+  }
+
+  .stage:not(:last-child)::after {
+    right: auto;
+    bottom: calc(-1 * var(--stage-gap));
+    width: 2px;
+    height: auto;
+    margin: 0 0 0 -1px;
+  }
+
+  .facts {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .facts > div {
+    border-right: 0;
+    padding-right: 0;
+    margin-right: 0;
+  }
+}
