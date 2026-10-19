@@ -93,6 +93,34 @@ export const projects: Project[] = [
       },
     ],
   },
+  {
+    id: "flakehunter-airflow",
+    name: "FlakeHunter Airflow",
+    summary: "An Airflow DAG that integrates with FlakeHunter to track flaky tests.",
+    year: 2026,
+    stack: ["TypeScript", "Fastify", "Next.js", "PostgreSQL", "AWS CDK"],
+    license: "MIT",
+    stages: [
+      {
+        kind: "source",
+        href: "https://github.com/glennmcd/flakehunter-airflow",
+        detail: "github.com/glennmcd/flakehunter-airflow",
+        literal: true,
+        access: "public",
+      },
+      {
+        kind: "ci",
+        href: "https://github.com/glennmcd/flakehunter-airflow/actions/workflows/ci.yml",
+        detail: "GitHub Actions",
+        literal: false,
+        access: "public",
+        badge: {
+          src: "https://github.com/glennmcd/flakehunter-airflow/actions/workflows/ci.yml/badge.svg",
+          alt: "Current status of the CI workflow on main",
+        },
+      },
+    ],
+  },
 ];
 
 export const STAGE_LABELS: Record<StageKind, string> = {
