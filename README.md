@@ -1,7 +1,7 @@
 # g26work-site
 
 The project page at **[www.g26work.com](https://www.g26work.com)**: a build-status board listing the projects that
-represent my work, each with its source, CI, deployment and live demo.
+represent my work, each with its source, CI, deployment and live demo, if applicable.
 
 ## How it works
 
