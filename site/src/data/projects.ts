@@ -98,7 +98,7 @@ export const projects: Project[] = [
     name: "FlakeHunter Airflow",
     summary: "An Airflow DAG that integrates with FlakeHunter to track flaky tests.",
     year: 2026,
-    stack: ["TypeScript", "Fastify", "Next.js", "PostgreSQL", "AWS CDK"],
+    stack: ["Python", "Airflow SDK", "OpenAPI", "GitHubAPI", "Httpx"],
     license: "MIT",
     stages: [
       {
