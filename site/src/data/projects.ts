@@ -47,6 +47,53 @@ export const intro = "Projects representing my work";
 
 export const projects: Project[] = [
   {
+    id: "commitment-tracker-ai",
+    name: "Commitment Tracker AI",
+    summary: "Extracts commitments from call transcripts and audio: who promised what, to whom, and by when.",
+    year: 2026,
+    stack: ["Python", "FastAPI", "Claude", "Anthropic SDK", "Next.js", "AWS CDK"],
+    license: "MIT",
+    stages: [
+      {
+        kind: "source",
+        href: "https://github.com/glennmcd/commitment-tracker-ai",
+        detail: "github.com/glennmcd/commitment-tracker-ai",
+        literal: true,
+        access: "public",
+      },
+      {
+        kind: "ci",
+        href: "https://github.com/glennmcd/commitment-tracker-ai/actions/workflows/ci.yml",
+        detail: "GitHub Actions",
+        literal: false,
+        access: "public",
+        badge: {
+          src: "https://github.com/glennmcd/commitment-tracker-ai/actions/workflows/ci.yml/badge.svg",
+          alt: "Current status of the CI workflow on main",
+        },
+      },
+      {
+        kind: "deploy",
+        href: "https://github.com/glennmcd/commitment-tracker-ai/blob/main/docs/deploying.md",
+        detail: "AWS Lambda and Amplify, via CDK",
+        literal: false,
+        access: "public",
+      },
+      {
+        kind: "demo",
+        href: "https://commitmentai.g26work.com",
+        detail: "commitmentai.g26work.com",
+        literal: true,
+        access: "restricted",
+        note: {
+          text: "Password-protected.",
+          href: "https://github.com/glennmcd/commitment-tracker-ai/issues",
+          linkText: "Ask for access in a GitHub issue",
+        },
+      },
+    ],
+  },
+  {
     id: "flakehunter",
     name: "FlakeHunter",
     summary: "Find the flaky tests in your GitHub Actions CI: any test that both passes and fails on the same commit.",
