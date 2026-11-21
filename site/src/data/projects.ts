@@ -80,7 +80,8 @@ export const projects: Project[] = [
         access: "public",
       },
     ],
-  },{
+  },
+  {
     id: "commitment-tracker-ai",
     name: "Commitment Tracker AI",
     summary: "Extracts commitments from call transcripts and audio: who promised what, to whom, and by when.",
