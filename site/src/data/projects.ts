@@ -47,6 +47,40 @@ export const intro = "Projects representing my work";
 
 export const projects: Project[] = [
   {
+    id: "fleetwright",
+    name: "Fleetwright",
+    summary: "Running a fleet of Claude Code agents, maintaining control of the code and the token budget",
+    year: 2026,
+    stack: ["Python", "Claude", "Github CLI", "Bubblewrap", "RTK"],
+    license: "MIT",
+    stages: [
+      {
+        kind: "source",
+        href: "https://github.com/glennmcd/fleetwright",
+        detail: "github.com/glennmcd/fleetwright",
+        literal: true,
+        access: "public",
+      },
+      {
+        kind: "ci",
+        href: "https://github.com/glennmcd/fleetwright/actions/workflows/tests.yml",
+        detail: "GitHub Actions",
+        literal: false,
+        access: "public",
+        badge: {
+          src: "https://github.com/glennmcd/fleetwright/actions/workflows/tests.yml/badge.svg",
+          alt: "Current status of the CI workflow on main",
+        },
+      },
+      {
+        kind: "deploy",
+        href: "https://github.com/glennmcd/fleetwright/blob/main/docs/vm-setup.md",
+        detail: "Claude plugin",
+        literal: false,
+        access: "public",
+      },
+    ],
+  },{
     id: "commitment-tracker-ai",
     name: "Commitment Tracker AI",
     summary: "Extracts commitments from call transcripts and audio: who promised what, to whom, and by when.",
